@@ -1,0 +1,13 @@
+# .dockerignore - files to exclude from Docker build
+.git/
+.gitignore
+.dockerignore
+.env
+__pycache__/
+*.py[cod]
+*$py.class
+run/
+tests/
+*.egg-info/
+dist/
+build/

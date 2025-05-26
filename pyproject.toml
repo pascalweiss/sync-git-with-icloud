@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sync-icloud-git"
+version = "0.1.0"
+description = "A tool to sync between iCloud and Git repositories"
+readme = "README.md"
+authors = [
+    {name = "pweiss"}
+]
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pytest>=7.0.0",
+]
+license = "MIT"
+
+[tool.setuptools]
+packages = ["sync_icloud_git"]
+
+[project.scripts]
+sync-icloud-git = "sync_icloud_git.cli:main"
+
+[project.urls]
+"Homepage" = "https://github.com/pweiss/sync-icloud-git"
+"Bug Tracker" = "https://github.com/pweiss/sync-icloud-git/issues"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
