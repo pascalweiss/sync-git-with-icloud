@@ -23,7 +23,7 @@ cd sync-icloud-git
 # Run the setup script (creates virtual env and installs dependencies)
 ./run/setup_env.sh
 
-# Activate the virtual environment in your shell
+# Activate the virtual environment
 source .venv/bin/activate
 ```
 
