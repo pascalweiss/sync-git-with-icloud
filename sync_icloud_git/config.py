@@ -26,10 +26,10 @@ class SyncConfig:
             SyncConfig: A configuration object.
         """
         # Check environment variables first
-        env_remote_url = os.environ.get("SYNC_ICLOUD_GIT_REMOTE_URL")
-        env_username = os.environ.get("SYNC_ICLOUD_GIT_USERNAME")
-        env_pat = os.environ.get("SYNC_ICLOUD_GIT_PAT")
-        env_repo_path = os.environ.get("SYNC_ICLOUD_GIT_REPO_PATH")
+        env_remote_url = os.environ.get("SYNC_ICLOUD_GIT__GIT_REMOTE_URL")
+        env_username = os.environ.get("SYNC_ICLOUD_GIT__GIT_USERNAME")
+        env_pat = os.environ.get("SYNC_ICLOUD_GIT__GIT_PAT")
+        env_repo_path = os.environ.get("SYNC_ICLOUD_GIT__GIT_REPO_PATH")
         
         parser = argparse.ArgumentParser(description="Sync iCloud Git repository.")
         parser.add_argument(
@@ -64,13 +64,13 @@ class SyncConfig:
         
         # Validate required arguments
         if not args.git_remote_url:
-            parser.error("Git remote URL is required. Provide it with --git-remote-url or set SYNC_ICLOUD_GIT_REMOTE_URL environment variable.")
+            parser.error("Git remote URL is required. Provide it with --git-remote-url or set SYNC_ICLOUD_GIT__GIT_REMOTE_URL environment variable.")
         
         if not args.git_username:
-            parser.error("Git username is required. Provide it with --git-username or set SYNC_ICLOUD_GIT_USERNAME environment variable.")
+            parser.error("Git username is required. Provide it with --git-username or set SYNC_ICLOUD_GIT__GIT_USERNAME environment variable.")
         
         if not args.git_pat:
-            parser.error("Git Personal Access Token is required. Provide it with --git-pat or set SYNC_ICLOUD_GIT_PAT environment variable.")
+            parser.error("Git Personal Access Token is required. Provide it with --git-pat or set SYNC_ICLOUD_GIT__GIT_PAT environment variable.")
             
         return cls(git_remote_url=args.git_remote_url, git_username=args.git_username, git_pat=args.git_pat, git_repo_path=args.git_repo_path)
     
