@@ -8,14 +8,24 @@ A simple tool to synchronize between iCloud and Git repositories.
 
 ## Installation
 
-
-
 ```bash
 # Install with pipx (recommended for end users)
 pipx install sync-icloud-git
 ```
 
+## Development Setup
 
+```bash
+# Clone the repository
+git clone https://github.com/pweiss/sync-icloud-git.git
+cd sync-icloud-git
+
+# Run the setup script (creates virtual env and installs dependencies)
+./run/setup_env.sh
+
+# Activate the virtual environment in your shell
+source .venv/bin/activate
+```
 
 ## Usage
 
@@ -34,12 +44,9 @@ You can build and run the application in a Docker container:
 
 ## Testing
 
-To run the tests for this application:
+After setting up your development environment:
 
 ```bash
-# Install development dependencies
-pip install -e ".[dev]"
-
 # Run the tests using the test script
 ./run/test_run.sh
 
