@@ -9,10 +9,14 @@ class SyncConfig:
     This class serves as a Data Transfer Object (DTO) for configuration settings.
     """
     
-    def __init__(self, git_remote_url=None, git_username=None, git_pat=None):
+    # Default git repository path within project directory
+    DEFAULT_GIT_REPO_PATH = os.path.join(os.getcwd(), "git")
+    
+    def __init__(self, git_remote_url=None, git_username=None, git_pat=None, git_repo_path=None):
         self.git_remote_url = git_remote_url
         self.git_username = git_username
         self.git_pat = git_pat
+        self.git_repo_path = git_repo_path if git_repo_path else self.DEFAULT_GIT_REPO_PATH
     
     @classmethod
     def load_config(cls):
@@ -21,35 +25,54 @@ class SyncConfig:
         Returns:
             SyncConfig: A configuration object.
         """
+        # Check environment variables first
+        env_remote_url = os.environ.get("SYNC_ICLOUD_GIT_REMOTE_URL")
+        env_username = os.environ.get("SYNC_ICLOUD_GIT_USERNAME")
+        env_pat = os.environ.get("SYNC_ICLOUD_GIT_PAT")
+        env_repo_path = os.environ.get("SYNC_ICLOUD_GIT_REPO_PATH")
+        
         parser = argparse.ArgumentParser(description="Sync iCloud Git repository.")
         parser.add_argument(
             "--git-remote-url",
             type=str,
             help="The repository URL to sync with iCloud.",
-            required=False,
-            default=os.environ.get("SYNC_ICLOUD_GIT_REMOTE_URL"),
+            required=not bool(env_remote_url),  # Only required if not in environment
+            default=env_remote_url,
         )
         parser.add_argument(
             "--git-username",
             type=str,
             help="The Git username for authentication.",
-            required=False,
-            default=os.environ.get("SYNC_ICLOUD_GIT_USERNAME"),
+            required=not bool(env_username),  # Only required if not in environment
+            default=env_username,
         )
         parser.add_argument(
             "--git-pat",
             type=str,
             help="The Git Personal Access Token for authentication.",
+            required=not bool(env_pat),  # Only required if not in environment
+            default=env_pat,
+        )
+        parser.add_argument(
+            "--git-repo-path",
+            type=str,
+            help="The local path where the git repository will be stored.",
             required=False,
-            default=os.environ.get("SYNC_ICLOUD_GIT_PAT"),
+            default=env_repo_path if env_repo_path else cls.DEFAULT_GIT_REPO_PATH,
         )
         args = parser.parse_args()
         
         # Validate required arguments
         if not args.git_remote_url:
             parser.error("Git remote URL is required. Provide it with --git-remote-url or set SYNC_ICLOUD_GIT_REMOTE_URL environment variable.")
+        
+        if not args.git_username:
+            parser.error("Git username is required. Provide it with --git-username or set SYNC_ICLOUD_GIT_USERNAME environment variable.")
+        
+        if not args.git_pat:
+            parser.error("Git Personal Access Token is required. Provide it with --git-pat or set SYNC_ICLOUD_GIT_PAT environment variable.")
             
-        return cls(git_remote_url=args.git_remote_url, git_username=args.git_username, git_pat=args.git_pat)
+        return cls(git_remote_url=args.git_remote_url, git_username=args.git_username, git_pat=args.git_pat, git_repo_path=args.git_repo_path)
     
     def __repr__(self):
         """Return a string representation of the configuration.
@@ -59,4 +82,4 @@ class SyncConfig:
         """
         # Mask the PAT if it exists for security
         pat_display = "********" if self.git_pat else "None"
-        return f"SyncConfig(git_remote_url='{self.git_remote_url}', git_username='{self.git_username}', git_pat='{pat_display}')"
+        return f"SyncConfig(git_remote_url='{self.git_remote_url}', git_username='{self.git_username}', git_pat='{pat_display}', git_repo_path='{self.git_repo_path}')"

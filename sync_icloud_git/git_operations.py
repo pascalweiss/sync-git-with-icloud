@@ -21,6 +21,7 @@ class GitOperations:
         self.git_remote_url = config.git_remote_url
         self.git_username = config.git_username
         self.git_pat = config.git_pat
+        self.git_repo_path = config.git_repo_path
     
     def __repr__(self):
         """Return a string representation of the GitOperations instance.
@@ -28,4 +29,4 @@ class GitOperations:
         Returns:
             str: A string representation of the GitOperations.
         """
-        return f"GitOperations(config={self.config})"
+        return f"GitOperations(config={self.config}, git_repo_path='{self.git_repo_path}')"
