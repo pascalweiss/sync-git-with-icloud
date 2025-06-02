@@ -26,22 +26,29 @@ class GitOperations:
         return f"https://{self.git_username}:{self.git_pat}@{target_url[8:]}"
 
     def _setup_submodules(self, repo):
-        """Setup and update submodules with authentication."""
+        """Setup and update submodules with authentication to latest commits."""
         if not repo.submodules:
             return
             
-        print(f"Found {len(repo.submodules)} submodules, setting up authentication...")
-        repo.git.submodule('init')
+        print(f"Found {len(repo.submodules)} submodules, updating to latest...")
         
-        # Configure auth for each submodule
+        # Configure auth and update submodules in one go
         for submodule in repo.submodules:
             if submodule.url.startswith('https://') and self.git_username and self.git_pat:
-                auth_url = self._get_auth_url(submodule.url)
-                repo.git.config(f'submodule.{submodule.name}.url', auth_url)
-                print(f"Configured authentication for submodule: {submodule.name}")
+                repo.git.config(f'submodule.{submodule.name}.url', self._get_auth_url(submodule.url))
         
-        print("Updating submodules...")
-        repo.git.submodule('update')
+        # Init and update to latest commits from tracked branches
+        repo.git.submodule('update', '--init', '--remote', '--recursive')
+        
+        # Ensure submodules are on proper branches (not detached HEAD)
+        for submodule in repo.submodules:
+            for branch in ['main', 'master']:
+                try:
+                    submodule.module().git.checkout(branch)
+                    print(f"Updated submodule '{submodule.name}' on '{branch}'")
+                    break
+                except:
+                    continue
 
     def check_and_update_repo(self):
         """Check for existing repository and update it with submodules."""
