@@ -16,20 +16,47 @@ def main():
     icloud_ops = ICloudOperations(config)
     print(f"ICloudOperations: {icloud_ops}")
     
-    # Check and update existing repository
-    print("\n--- Checking for existing git repository ---")
-    repo_updated = git_ops.check_and_update_repo()
+    # Execute based on the step parameter
+    if config.step in ['all', 'update']:
+        # Check and update existing repository
+        print("\n--- Checking for existing git repository ---")
+        repo_updated = git_ops.check_and_update_repo()
+        
+        if repo_updated:
+            print("✅ Repository update completed successfully!")
+        elif config.step == 'all':
+            # Only try to clone if we're doing 'all' steps
+            print("ℹ️  No existing repository found at the specified path.")
+            print("\n--- Cloning repository ---")
+            clone_success = git_ops.clone_repo()
+            if clone_success:
+                print("✅ Repository cloned successfully!")
+            else:
+                print("❌ Failed to clone repository.")
+                return
+        else:
+            print("ℹ️  No existing repository found. Use --step=clone or --step=all to clone first.")
+            return
     
-    if repo_updated:
-        print("✅ Repository update completed successfully!")
-    else:
-        print("ℹ️  No existing repository found at the specified path.")
+    elif config.step == 'clone':
+        # Only clone the repository
         print("\n--- Cloning repository ---")
         clone_success = git_ops.clone_repo()
         if clone_success:
             print("✅ Repository cloned successfully!")
         else:
             print("❌ Failed to clone repository.")
+            return
+    
+    # Sync from iCloud to git repository
+    if config.step in ['all', 'sync']:
+        print("\n--- Syncing from iCloud ---")
+        try:
+            icloud_ops.sync_from_icloud_to_repo()
+            print("✅ iCloud sync completed successfully!")
+        except Exception as e:
+            print(f"❌ iCloud sync failed: {e}")
+            return
 
 if __name__ == "__main__":
     main()
