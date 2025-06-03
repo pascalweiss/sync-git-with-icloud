@@ -1,6 +1,7 @@
 """Command line interface for sync-icloud-git."""
 from sync_icloud_git.config import SyncConfig
 from sync_icloud_git.git_operations import GitOperations
+from sync_icloud_git.icloud_operations import ICloudOperations
 
 def main():
     """Run the main program."""
@@ -10,6 +11,10 @@ def main():
     # Create an instance of GitOperations with the loaded configuration
     git_ops = GitOperations(config)
     print(f"GitOperations: {git_ops}")
+    
+    # Create an instance of ICloudOperations with the loaded configuration
+    icloud_ops = ICloudOperations(config)
+    print(f"ICloudOperations: {icloud_ops}")
     
     # Check and update existing repository
     print("\n--- Checking for existing git repository ---")

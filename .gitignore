@@ -41,4 +41,5 @@ ENV/
 .DS_Store
 .pytest_cache/
 __pypackages__/
-git
+git/
+synced_repo/

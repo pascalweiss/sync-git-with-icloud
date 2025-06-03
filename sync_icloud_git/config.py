@@ -10,14 +10,15 @@ class SyncConfig:
     """
     
     # Default git repository path within project directory
-    DEFAULT_GIT_REPO_PATH = os.path.join(os.getcwd(), "git")
+    DEFAULT_GIT_REPO_PATH = os.path.join(os.getcwd(), "synced_repo")
     
-    def __init__(self, git_remote_url=None, git_username=None, git_pat=None, git_repo_path=None, rclone_config_content=None):
+    def __init__(self, git_remote_url=None, git_username=None, git_pat=None, git_repo_path=None, rclone_config_content=None, rclone_remote_folder=None):
         self.git_remote_url = git_remote_url
         self.git_username = git_username
         self.git_pat = git_pat
         self.git_repo_path = git_repo_path if git_repo_path else self.DEFAULT_GIT_REPO_PATH
         self.rclone_config_content = rclone_config_content
+        self.rclone_remote_folder = rclone_remote_folder
     
     @classmethod
     def load_config(cls):
@@ -32,6 +33,7 @@ class SyncConfig:
         env_pat = os.environ.get("SYNC_ICLOUD_GIT__GIT_PAT")
         env_repo_path = os.environ.get("SYNC_ICLOUD_GIT__GIT_REPO_PATH")
         env_rclone_config = os.environ.get("SYNC_ICLOUD_GIT__RCLONE_CONFIG_CONTENT")
+        env_rclone_remote_folder = os.environ.get("SYNC_ICLOUD_GIT__RCLONE_REMOTE_FOLDER")
         
         parser = argparse.ArgumentParser(description="Sync iCloud Git repository.")
         parser.add_argument(
@@ -69,6 +71,13 @@ class SyncConfig:
             required=not bool(env_rclone_config),  # Only required if not in environment
             default=env_rclone_config,
         )
+        parser.add_argument(
+            "--rclone-remote-folder",
+            type=str,
+            help="The remote folder path in iCloud to sync with.",
+            required=not bool(env_rclone_remote_folder),  # Only required if not in environment
+            default=env_rclone_remote_folder,
+        )
         args = parser.parse_args()
         
         # Validate required arguments
@@ -83,8 +92,11 @@ class SyncConfig:
         
         if not args.rclone_config_content:
             parser.error("Rclone configuration content is required. Provide it with --rclone-config-content or set SYNC_ICLOUD_GIT__RCLONE_CONFIG_CONTENT environment variable.")
+        
+        if not args.rclone_remote_folder:
+            parser.error("Rclone remote folder is required. Provide it with --rclone-remote-folder or set SYNC_ICLOUD_GIT__RCLONE_REMOTE_FOLDER environment variable.")
             
-        return cls(git_remote_url=args.git_remote_url, git_username=args.git_username, git_pat=args.git_pat, git_repo_path=args.git_repo_path, rclone_config_content=args.rclone_config_content)
+        return cls(git_remote_url=args.git_remote_url, git_username=args.git_username, git_pat=args.git_pat, git_repo_path=args.git_repo_path, rclone_config_content=args.rclone_config_content, rclone_remote_folder=args.rclone_remote_folder)
     
     def __repr__(self):
         """Return a string representation of the configuration.
@@ -95,4 +107,4 @@ class SyncConfig:
         # Mask the PAT if it exists for security
         pat_display = "********" if self.git_pat else "None"
         rclone_display = "********" if self.rclone_config_content else "None"
-        return f"SyncConfig(git_remote_url='{self.git_remote_url}', git_username='{self.git_username}', git_pat='{pat_display}', git_repo_path='{self.git_repo_path}', rclone_config_content='{rclone_display}')"
+        return f"SyncConfig(git_remote_url='{self.git_remote_url}', git_username='{self.git_username}', git_pat='{pat_display}', git_repo_path='{self.git_repo_path}', rclone_config_content='{rclone_display}', rclone_remote_folder='{self.rclone_remote_folder}')"
