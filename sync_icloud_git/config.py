@@ -14,8 +14,11 @@ class SyncConfig:
     
     # Default patterns to exclude from iCloud sync
     DEFAULT_EXCLUDE_PATTERNS = [
-        '.git/**',      # Git repository files
-        '.DS_Store',    # macOS system files
+        '**/.git/**',        # Exclude .git folders in any directory
+        '**/.gitmodules',    # Exclude .gitmodules files in any directory
+        '**/.DS_Store',      # Exclude .DS_Store files in any directory
+        '**/Thumbs.db',      # Exclude Windows thumbnail cache files
+        '**/.gitignore',     # Exclude .gitignore files (they're repo-specific)
     ]
     
     def __init__(self, git_remote_url=None, git_username=None, git_pat=None, git_repo_path=None, rclone_config_content=None, rclone_remote_folder=None, exclude_patterns=None, step=None):
