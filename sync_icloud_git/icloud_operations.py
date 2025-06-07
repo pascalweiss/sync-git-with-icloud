@@ -123,8 +123,8 @@ class ICloudOperations:
         # Add exclude patterns as a single --exclude argument with comma-separated values
         # This approach works with rclone_python library (multiple --exclude args cause failures)
         if self.config.exclude_patterns:
-            exclude_string = ','.join(self.config.exclude_patterns)
-            args.extend(['--exclude', exclude_string])
+            exclude_string = f"'{','.join(self.config.exclude_patterns)}'"
+            args.extend(['--exclude', exclude_string, '--delete-excluded=false'])            
             print(f"🚫 Excluding {len(self.config.exclude_patterns)} patterns using comma-separated format")
         
         self._log_sync_parameters(remote_path, args)
