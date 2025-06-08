@@ -125,6 +125,7 @@ class ICloudOperations:
         if self.config.exclude_patterns:
             for pattern in self.config.exclude_patterns:
                 args.extend(['--exclude', pattern])
+            print(f"🚫 Excluding {len(self.config.exclude_patterns)} patterns using separate --exclude arguments")
         
         self._log_sync_parameters(remote_path, args)
         
@@ -158,6 +159,7 @@ class ICloudOperations:
         print(f"   dest_path: '{self.git_repo_path}'")
         print("   show_progress: True")
         print(f"   args: {args}")
+        print(f"   exclude_patterns from config: {self.config.exclude_patterns}")
 
     def _execute_sync_with_library(self, remote_path, args):
         """Execute rclone sync using rclone_python library (preferred approach).
@@ -166,7 +168,11 @@ class ICloudOperations:
             remote_path (str): The source remote path
             args (list): Command line arguments for rclone
         """
-
+        print("🔧 Executing rclone.sync with library...")
+        print(f"   src_path: '{remote_path}'")
+        print(f"   dest_path: '{self.git_repo_path}'")
+        print(f"   args: {args}")
+        
         # Use rclone_python library directly (same approach as test_rclone.py)
         rclone.sync(
             src_path=remote_path,
