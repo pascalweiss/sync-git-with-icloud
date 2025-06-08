@@ -12,9 +12,19 @@ class SyncConfig:
     # Default git repository path within project directory
     DEFAULT_GIT_REPO_PATH = os.path.join(os.getcwd(), "synced_repo")
     
-    # Default patterns to exclude from iCloud sync
+    # Default patterns to exclude from iCloud sync. Note, that these patterns are wrapped in single quotes 
+    # to ensure they are treated as strings later in the rclone command.
     DEFAULT_EXCLUDE_PATTERNS = [
-        '.git/',        # Exclude .git folders in any directory
+        "'.git/'",       
+        "'.git'",
+        "'.git/**'",
+        "'**/.git'",
+        "'**/.git/**'",
+        "'.gitmodules'",
+        "'**/.gitmodules'",
+        "'.gitignore'",
+        "'**/.gitignore'",
+
     ]
     
     def __init__(self, git_remote_url=None, git_username=None, git_pat=None, git_repo_path=None, rclone_config_content=None, rclone_remote_folder=None, exclude_patterns=None, step=None):

@@ -1,10 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This script runs tests for the sync-icloud-git project
 
 # Run the tests
-if [ "$1" = "--cov" ]; then
-    pytest --cov=sync_icloud_git
-else
-    pytest
-fi
+LOC="$(dirname "$0")"
+
+cd $LOC
+
+rm -rf synced_repo
+
+
+source .env
+sync-icloud-git --step=all
+
+
+ls -lath synced_repo
