@@ -1,6 +1,6 @@
 """Git operations module for sync-icloud-git."""
-import git
 import os
+import git
 
 
 class GitOperations:
@@ -17,38 +17,6 @@ class GitOperations:
         if self.git_username and self.git_pat:
             print(f"Git authentication configured for user: {self.git_username}")
 
-    def _get_auth_url(self, url=None):
-        """Get URL with embedded authentication credentials."""
-        target_url = url or self.git_remote_url
-        if not self.git_username or not self.git_pat or not target_url.startswith('https://'):
-            return target_url
-        # Embed credentials: https://username:token@domain/path
-        return f"https://{self.git_username}:{self.git_pat}@{target_url[8:]}"
-
-    def _setup_submodules(self, repo):
-        """Setup and update submodules with authentication to latest commits."""
-        if not repo.submodules:
-            return
-            
-        print(f"Found {len(repo.submodules)} submodules, updating to latest...")
-        
-        # Configure auth and update submodules in one go
-        for submodule in repo.submodules:
-            if submodule.url.startswith('https://') and self.git_username and self.git_pat:
-                repo.git.config(f'submodule.{submodule.name}.url', self._get_auth_url(submodule.url))
-        
-        # Init and update to latest commits from tracked branches
-        repo.git.submodule('update', '--init', '--remote', '--recursive')
-        
-        # Ensure submodules are on proper branches (not detached HEAD)
-        for submodule in repo.submodules:
-            for branch in ['main', 'master']:
-                try:
-                    submodule.module().git.checkout(branch)
-                    print(f"Updated submodule '{submodule.name}' on '{branch}'")
-                    break
-                except:
-                    continue
 
     def check_and_update_repo(self):
         """Check for existing repository and update it with submodules."""
@@ -87,6 +55,7 @@ class GitOperations:
             print(f"Error updating repository: {e}")
             raise
 
+
     def clone_repo(self):
         """Clone repository with submodules."""
         try:
@@ -105,6 +74,43 @@ class GitOperations:
         except Exception as e:
             print(f"Error cloning repository: {e}")
             return False
+
+
+    def _get_auth_url(self, url=None):
+        """Get URL with embedded authentication credentials."""
+        target_url = url or self.git_remote_url
+        if not self.git_username or not self.git_pat or not target_url.startswith('https://'):
+            return target_url
+        # Embed credentials: https://username:token@domain/path
+        return f"https://{self.git_username}:{self.git_pat}@{target_url[8:]}"
+
+
+    def _setup_submodules(self, repo):
+        """Setup and update submodules with authentication to latest commits."""
+        if not repo.submodules:
+            return
+            
+        print(f"Found {len(repo.submodules)} submodules, updating to latest...")
+        
+        # Configure auth and update submodules in one go
+        for submodule in repo.submodules:
+            if submodule.url.startswith('https://') and self.git_username and self.git_pat:
+                repo.git.config(f'submodule.{submodule.name}.url', self._get_auth_url(submodule.url))
+        
+        # Init and update to latest commits from tracked branches
+        repo.git.submodule('update', '--init', '--remote', '--recursive')
+        
+
+        # Ensure submodules are on proper branches (not detached HEAD)
+        for submodule in repo.submodules:
+            for branch in ['main', 'master']:
+                try:
+                    submodule.module().git.checkout(branch)
+                    print(f"Updated submodule '{submodule.name}' on '{branch}'")
+                    break
+                except:
+                    continue
+
 
     def __repr__(self):
         return f"GitOperations(git_repo_path='{self.git_repo_path}')"
