@@ -40,3 +40,4 @@ dev = [
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "--cov=sync_icloud_git --cov-report=term-missing --cov-report=xml"
