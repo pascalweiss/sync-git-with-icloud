@@ -1,20 +1,40 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 
-# This script sources the .env file and builds the Docker image,
-# then runs the container
+# Simple script to build and run Docker container with podman
+# Sources .env file and builds then runs the container
 
 set -e
 
-DIR=$(dirname "$0")/..
-cd "$DIR" || exit 1
+# Navigate to project root
+cd "$(dirname "$0")/.."
 
+# Source environment variables
+if [ -f ".env" ]; then
+    source .env
+else
+    echo "Error: .env file not found"
+    exit 1
+fi
 
-# Source the environment variables
-source .env
+# Set defaults
+IMAGE_NAME=${IMAGE_NAME:-"sync-icloud-git"}
+TAG=${TAG:-"latest"}
 
-# Build the Docker image
+echo "Building and running Docker container with podman..."
+echo "Image: $IMAGE_NAME:$TAG"
+echo
+
+# Build the image
 ./run/docker_build.sh
 
 # Run the container
-echo "Building completed, now running the container..."
-podman run -it localhost/${IMAGE_NAME}:${TAG}
+echo "🚀 Starting container..."
+podman run -it --rm \
+    -e "SYNC_ICLOUD_GIT__GIT_REMOTE_URL=$SYNC_ICLOUD_GIT__GIT_REMOTE_URL" \
+    -e "SYNC_ICLOUD_GIT__GIT_USERNAME=$SYNC_ICLOUD_GIT__GIT_USERNAME" \
+    -e "SYNC_ICLOUD_GIT__GIT_EMAIL=$SYNC_ICLOUD_GIT__GIT_EMAIL" \
+    -e "SYNC_ICLOUD_GIT__GIT_PAT=$SYNC_ICLOUD_GIT__GIT_PAT" \
+    -e "SYNC_ICLOUD_GIT__GIT_COMMIT_MESSAGE=$SYNC_ICLOUD_GIT__GIT_COMMIT_MESSAGE" \
+    -e "SYNC_ICLOUD_GIT__RCLONE_REMOTE_FOLDER=$SYNC_ICLOUD_GIT__RCLONE_REMOTE_FOLDER" \
+    -e "SYNC_ICLOUD_GIT__RCLONE_CONFIG_CONTENT=$SYNC_ICLOUD_GIT__RCLONE_CONFIG_CONTENT" \
+    "$IMAGE_NAME:$TAG"

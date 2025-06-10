@@ -1,31 +1,29 @@
 #!/usr/bin/env bash
 
-# Exit immediately if a command exits with non-zero status
+# Simple Docker build script using podman
+# Sources .env file for IMAGE_NAME and TAG variables
+
 set -e
 
-# This script builds the docker image using podman
-# Required environment variables must be set before running this script:
-# - IMAGE_NAME: Name of the docker image
-# - TAG: Tag for the docker image
+# Navigate to project root
+cd "$(dirname "$0")/.."
 
-DIR=$(dirname "$0")/..
-cd "$DIR" || exit 1
+# Set defaults
+IMAGE_NAME=${IMAGE_NAME:-"sync-icloud-git"}
+TAG=${TAG:-"latest"}
 
-# Verify required environment variables are set
-for VAR in IMAGE_NAME TAG; do
-    if [ -z "${!VAR}" ]; then
-        echo "Error: $VAR environment variable is not set"
-        exit 1
-    fi
-done
+# Source environment variables if .env exists (optional)
+if [ -f ".env" ]; then
+    source .env
+    # Re-apply defaults in case .env doesn't define them
+    IMAGE_NAME=${IMAGE_NAME:-"sync-icloud-git"}
+    TAG=${TAG:-"latest"}
+fi
 
-# Set image name and tag
-LOCAL_IMAGE_NAME="localhost/$IMAGE_NAME:$TAG"
+echo "Building Docker image with podman: $IMAGE_NAME:$TAG"
 
-echo "Building $LOCAL_IMAGE_NAME with Podman..."
+# Build with podman
+podman build -t "$IMAGE_NAME:$TAG" .
 
-# Build the image with fully qualified image name to avoid short-name resolution error
-podman build --format docker -t "$LOCAL_IMAGE_NAME" -f Dockerfile .
-
-echo "Build completed successfully!"
+echo "✅ Build completed successfully!"
 
