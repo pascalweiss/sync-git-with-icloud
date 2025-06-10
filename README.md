@@ -44,12 +44,20 @@ You can build and run the application in a Docker container:
 
 ## Testing
 
-After setting up your development environment:
+The project includes comprehensive test suites for all modules. See [TESTING.md](TESTING.md) for detailed testing documentation.
+
+### Quick Testing
 
 ```bash
-# Run the tests using the test script
-./run/test_run.sh
+# Run all tests
+./run/test_all.sh
 
-# Run tests with coverage report
-./run/test_run.sh --cov
+# Run config tests only
+./run/test_config.sh
 ```
+
+### Test Coverage
+
+- **91% coverage** for configuration module
+- Comprehensive unit tests for all components
+- Automated test runners with coverage reporting

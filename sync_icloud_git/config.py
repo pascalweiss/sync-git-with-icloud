@@ -38,7 +38,7 @@ class SyncConfig:
         self.git_commit_message = git_commit_message if git_commit_message else self.DEFAULT_GIT_COMMIT_MESSAGE
         self.rclone_config_content = rclone_config_content
         self.rclone_remote_folder = rclone_remote_folder
-        self.exclude_patterns = exclude_patterns if exclude_patterns else self.DEFAULT_EXCLUDE_PATTERNS
+        self.exclude_patterns = exclude_patterns if exclude_patterns else self.DEFAULT_EXCLUDE_PATTERNS.copy()
         self.step = step if step else 'all'
     
     @classmethod
