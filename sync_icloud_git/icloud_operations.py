@@ -118,6 +118,7 @@ class ICloudOperations:
             '--retries', '5',
             '--low-level-retries', '10',
             '--delete-excluded=false', 
+            '--checksum',  # Use checksum comparison instead of modification time
             '-v'
         ]
         
