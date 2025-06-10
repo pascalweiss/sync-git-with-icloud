@@ -13,6 +13,7 @@ class GitOperations:
         self.git_username = config.git_username
         self.git_pat = config.git_pat
         self.git_repo_path = config.git_repo_path
+        self.repo = None
         
         if self.git_username and self.git_pat:
             print(f"Git authentication configured for user: {self.git_username}")
@@ -26,28 +27,28 @@ class GitOperations:
         
         try:
             print(f"Found existing git repository at {self.git_repo_path}")
-            repo = git.Repo(self.git_repo_path)
+            self.repo = git.Repo(self.git_repo_path)
             
             # Ensure we're on a proper branch
-            if repo.head.is_detached:
+            if self.repo.head.is_detached:
                 for branch in ['main', 'master']:
                     try:
-                        repo.git.checkout(branch)
+                        self.repo.git.checkout(branch)
                         break
                     except git.exc.GitCommandError:
                         continue
             
             # Update remote URL with auth and fetch/pull
             if self.git_username and self.git_pat:
-                repo.remotes.origin.set_url(self._get_auth_url())
+                self.repo.remotes.origin.set_url(self._get_auth_url())
             
             print("Fetching and pulling latest changes...")
-            repo.remotes.origin.fetch()
-            repo.remotes.origin.pull(repo.active_branch.name)
-            
+            self.repo.remotes.origin.fetch()
+            self.repo.remotes.origin.pull(self.repo.active_branch.name)
+
             # Update submodules
-            self._setup_submodules(repo)
-            
+            self._setup_submodules()
+
             print("Repository and submodules updated successfully!")
             return True
             
@@ -63,11 +64,11 @@ class GitOperations:
             print(f"Cloning repository from {self.git_remote_url} to {self.git_repo_path}")
             
             # Clone main repository
-            repo = git.Repo.clone_from(self._get_auth_url(), self.git_repo_path, recursive=False)
+            self.repo = git.Repo.clone_from(self._get_auth_url(), self.git_repo_path, recursive=False)
             
             # Setup submodules
-            self._setup_submodules(repo)
-            
+            self._setup_submodules()
+
             print("Repository cloned successfully!")
             return True
             
@@ -85,24 +86,24 @@ class GitOperations:
         return f"https://{self.git_username}:{self.git_pat}@{target_url[8:]}"
 
 
-    def _setup_submodules(self, repo):
+    def _setup_submodules(self):
         """Setup and update submodules with authentication to latest commits."""
-        if not repo.submodules:
+        if not self.repo.submodules:
             return
-            
-        print(f"Found {len(repo.submodules)} submodules, updating to latest...")
-        
+
+        print(f"Found {len(self.repo.submodules)} submodules, updating to latest...")
+
         # Configure auth and update submodules in one go
-        for submodule in repo.submodules:
+        for submodule in self.repo.submodules:
             if submodule.url.startswith('https://') and self.git_username and self.git_pat:
-                repo.git.config(f'submodule.{submodule.name}.url', self._get_auth_url(submodule.url))
-        
+                self.repo.git.config(f'submodule.{submodule.name}.url', self._get_auth_url(submodule.url))
+
         # Init and update to latest commits from tracked branches
-        repo.git.submodule('update', '--init', '--remote', '--recursive')
-        
+        self.repo.git.submodule('update', '--init', '--remote', '--recursive')
+
 
         # Ensure submodules are on proper branches (not detached HEAD)
-        for submodule in repo.submodules:
+        for submodule in self.repo.submodules:
             for branch in ['main', 'master']:
                 try:
                     submodule.module().git.checkout(branch)
