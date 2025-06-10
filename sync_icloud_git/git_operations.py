@@ -113,5 +113,123 @@ class GitOperations:
                     continue
 
 
+    def commit_changes(self):
+        """Commit all changes in the main repository and submodules."""
+        if not self.repo:
+            print("No repository loaded. Cannot commit changes.")
+            return False
+        
+        try:
+            commit_message = self.config.git_commit_message
+            committed_repos = []
+            
+            # First, commit changes in all submodules
+            for submodule in self.repo.submodules:
+                try:
+                    submodule_repo = submodule.module()
+                    
+                    # Check if there are changes to commit in the submodule
+                    if submodule_repo.is_dirty(untracked_files=True):
+                        print(f"Committing changes in submodule: {submodule.name}")
+                        
+                        # Add all changes (including untracked files)
+                        submodule_repo.git.add('-A')
+                        
+                        # Commit the changes
+                        submodule_repo.index.commit(commit_message)
+                        committed_repos.append(f"submodule '{submodule.name}'")
+                        
+                        print(f"Successfully committed changes in submodule: {submodule.name}")
+                    else:
+                        print(f"No changes to commit in submodule: {submodule.name}")
+                        
+                except Exception as e:
+                    print(f"Error committing changes in submodule {submodule.name}: {e}")
+                    continue
+            
+            # Then, commit changes in the main repository (including submodule updates)
+            if self.repo.is_dirty(untracked_files=True):
+                print("Committing changes in main repository...")
+                
+                # Add all changes (including untracked files and submodule updates)
+                self.repo.git.add('-A')
+                
+                # Commit the changes
+                self.repo.index.commit(commit_message)
+                committed_repos.append("main repository")
+                
+                print("Successfully committed changes in main repository")
+            else:
+                print("No changes to commit in main repository")
+            
+            if committed_repos:
+                print(f"Changes committed successfully in: {', '.join(committed_repos)}")
+                print(f"Commit message used: '{commit_message}'")
+                return True
+            else:
+                print("No changes found to commit in any repository")
+                return False
+                
+        except Exception as e:
+            print(f"Error committing changes: {e}")
+            return False
+
+
+    def push_changes(self):
+        """Push committed changes to remote repositories."""
+        if not self.repo:
+            print("No repository loaded. Cannot push changes.")
+            return False
+        
+        try:
+            pushed_repos = []
+            
+            # First, push changes in all submodules
+            for submodule in self.repo.submodules:
+                try:
+                    submodule_repo = submodule.module()
+                    
+                    # Check if there are commits to push
+                    if list(submodule_repo.iter_commits('HEAD@{u}..HEAD')):
+                        print(f"Pushing changes in submodule: {submodule.name}")
+                        
+                        # Push to the remote
+                        origin = submodule_repo.remote('origin')
+                        origin.push()
+                        pushed_repos.append(f"submodule '{submodule.name}'")
+                        
+                        print(f"Successfully pushed changes in submodule: {submodule.name}")
+                    else:
+                        print(f"No commits to push in submodule: {submodule.name}")
+                        
+                except Exception as e:
+                    print(f"Error pushing changes in submodule {submodule.name}: {e}")
+                    continue
+            
+            # Then, push changes in the main repository
+            if list(self.repo.iter_commits('HEAD@{u}..HEAD')):
+                print("Pushing changes in main repository...")
+                
+                # Push to the remote
+                origin = self.repo.remote('origin')
+                origin.push()
+                pushed_repos.append("main repository")
+                
+                print("Successfully pushed changes in main repository")
+            else:
+                print("No commits to push in main repository")
+            
+            if pushed_repos:
+                print(f"Changes pushed successfully to: {', '.join(pushed_repos)}")
+                return True
+            else:
+                print("No changes found to push in any repository")
+                return False
+                
+        except Exception as e:
+            print(f"Error pushing changes: {e}")
+            return False
+
+
     def __repr__(self):
         return f"GitOperations(git_repo_path='{self.git_repo_path}')"

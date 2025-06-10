@@ -57,6 +57,32 @@ def main():
         except Exception as e:
             print(f"❌ iCloud sync failed: {e}")
             return
+        
+        # Commit changes after successful iCloud sync
+        print("\n--- Committing changes ---")
+        try:
+            commit_success = git_ops.commit_changes()
+            if commit_success:
+                print("✅ Changes committed successfully!")
+            else:
+                print("ℹ️  No changes to commit.")
+        except Exception as e:
+            print(f"❌ Failed to commit changes: {e}")
+            return
+        
+        # Push changes to remote repository
+        print("\n--- Pushing changes to remote ---")
+        try:
+            push_success = git_ops.push_changes()
+            if push_success:
+                print("✅ Changes pushed to remote successfully!")
+            else:
+                print("ℹ️  No changes to push.")
+        except Exception as e:
+            print(f"❌ Failed to push changes: {e}")
+            return
+    
+    print("\n🎉 Sync operation completed successfully!")
 
 if __name__ == "__main__":
     main()
