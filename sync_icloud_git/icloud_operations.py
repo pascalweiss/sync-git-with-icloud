@@ -18,8 +18,8 @@ class ICloudOperations:
         self.rclone_config_file = None
         self._setup_rclone_config()
         
-        print(f"iCloud operations configured (READ-ONLY mode) for path: {self.git_repo_path}")
-        print(f"iCloud remote folder: {self.rclone_remote_folder}")
+        if config.verbose:
+            print(f"iCloud sync configured: {self.rclone_remote_folder} → {os.path.basename(self.git_repo_path)}")
 
     # PUBLIC METHODS
     
@@ -32,7 +32,7 @@ class ICloudOperations:
         Raises:
             Exception: If connection fails or remote folder is not accessible
         """
-        print("🔍 Testing iCloud connection...")
+        print("Testing iCloud connection...")
         remote_path = self._build_remote_path()
         
         try:
@@ -52,15 +52,12 @@ class ICloudOperations:
         Files that have been removed from iCloud will be removed from the git repository.
         In the end, the git repository will be in sync with iCloud
         """
-        print(f"🔄 Starting sync from iCloud folder '{self.rclone_remote_folder}' to '{self.git_repo_path}'")
+        print(f"Starting sync from iCloud folder '{self.rclone_remote_folder}' to '{self.git_repo_path}'")
         
         # Orchestrate the sync process using private methods
         remote_path = self._build_remote_path()
         self.test_icloud_connection()
         self._execute_sync_operation(remote_path)
-        
-        print("✅ Sync completed successfully!")
-        print("📁 Synced iCloud folder to git repository using rclone_python library")
 
     # PRIVATE METHODS - Configuration Management
     
@@ -78,13 +75,15 @@ class ICloudOperations:
             if not content.strip():
                 raise ValueError("Rclone config file is empty after write")
         
-        print(f"Rclone config setup at: {self.rclone_config_file.name} ({len(content)} chars)")
+        if self.config.verbose:
+            print(f"Rclone config ready ({len(content)} chars)")
 
     def _cleanup_rclone_config(self):
         """Clean up temporary rclone configuration file."""
         if self.rclone_config_file and os.path.exists(self.rclone_config_file.name):
             os.unlink(self.rclone_config_file.name)
-            print("Cleaned up rclone config file")
+            if self.config.verbose:
+                print("Cleaned up rclone config file")
 
     # PRIVATE METHODS - Path and Remote Operations
     
@@ -104,8 +103,6 @@ class ICloudOperations:
         Args:
             remote_path (str): The source remote path
         """
-        print(f"📂 Syncing from {remote_path} to {self.git_repo_path}...")
-        
         # Ensure destination directory exists
         os.makedirs(self.git_repo_path, exist_ok=True)
         
@@ -126,7 +123,6 @@ class ICloudOperations:
         if self.config.exclude_patterns:
             for pattern in self.config.exclude_patterns:
                 args.extend(['--exclude', pattern])
-            print(f"🚫 Excluding {len(self.config.exclude_patterns)} patterns using separate --exclude arguments")
         
         self._log_sync_parameters(remote_path, args)
         
@@ -138,7 +134,6 @@ class ICloudOperations:
         try:
             # Use rclone_python library directly (based on successful test_rclone.py approach)
             self._execute_sync_with_library(remote_path, args)
-            print("✅ Sync completed successfully!")
         except Exception as e:
             # If there's any error, the sync failed - don't try to verify
             print(f"❌ rclone sync failed: {e}")
@@ -153,14 +148,16 @@ class ICloudOperations:
         
         Args:
             remote_path (str): The source remote path
-            args (list): Command line arguments for rclone
+            args (list): Command line arguments for rclone (unused but kept for compatibility)
         """
-        print("🔧 DEBUG: rclone_python library parameters:")
-        print(f"   src_path: '{remote_path}'")
-        print(f"   dest_path: '{self.git_repo_path}'")
-        print("   show_progress: True")
-        print(f"   args: {args}")
-        print(f"   exclude_patterns from config: {self.config.exclude_patterns}")
+        print(f"Syncing from {remote_path} to {self.git_repo_path}...")
+        if self.config.exclude_patterns:
+            if len(self.config.exclude_patterns) <= 10:
+                # Show all patterns if 10 or fewer
+                print(f"Excluding {len(self.config.exclude_patterns)} patterns: {', '.join(self.config.exclude_patterns)}")
+            else:
+                # Show first 8 with "..." if more than 10
+                print(f"Excluding {len(self.config.exclude_patterns)} patterns: {', '.join(self.config.exclude_patterns[:8])}...")
 
     def _execute_sync_with_library(self, remote_path, args):
         """Execute rclone sync using rclone_python library (preferred approach).
@@ -169,11 +166,6 @@ class ICloudOperations:
             remote_path (str): The source remote path
             args (list): Command line arguments for rclone
         """
-        print("🔧 Executing rclone.sync with library...")
-        print(f"   src_path: '{remote_path}'")
-        print(f"   dest_path: '{self.git_repo_path}'")
-        print(f"   args: {args}")
-        
         # Use rclone_python library directly (same approach as test_rclone.py)
         rclone.sync(
             src_path=remote_path,
@@ -182,7 +174,13 @@ class ICloudOperations:
             show_progress=True
         )
         
-        print("✅ rclone.sync completed successfully!")
+        print("✅ rclone sync completed!")
+        # Quick file count for user feedback
+        try:
+            synced_files = self._count_synced_files()
+            print(f"{len(synced_files)} files in repository")
+        except (OSError, AttributeError):
+            print(f"Sync to {os.path.basename(self.git_repo_path)} completed")
 
     def _count_synced_files(self):
         """Count files in the destination directory (excluding .git).

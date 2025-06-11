@@ -45,22 +45,36 @@ class TestICloudOperations:
 
     @patch('sync_icloud_git.icloud_operations.tempfile.NamedTemporaryFile')
     @patch('builtins.open', new_callable=mock_open, read_data="config content")
-    def test_init_success(self, mock_open_builtin, mock_tempfile, sample_config, mock_rclone_config_file, capsys):
+    def test_init_success(self, mock_open_builtin, mock_tempfile, mock_rclone_config_file, capsys):
         """Test successful ICloudOperations initialization."""
         mock_tempfile.return_value = mock_rclone_config_file
         
-        icloud_ops = ICloudOperations(sample_config)
+        # Create a verbose config to see initialization messages
+        verbose_config = SyncConfig(
+            git_remote_url="https://github.com/test/repo.git",
+            git_username="testuser",
+            git_pat="test_token",
+            git_repo_path="/tmp/test_repo",
+            git_commit_message="Test commit message",
+            rclone_config_content="[iclouddrive]\ntype = webdav\nurl = https://p123-caldav.icloud.com\nuser = testuser\npass = testpass",
+            rclone_remote_folder="Documents/TestFolder",
+            exclude_patterns=[".DS_Store", "*.tmp"],
+            step="all",
+            verbose=True
+        )
+        
+        icloud_ops = ICloudOperations(verbose_config)
         
         # Verify initialization
-        assert icloud_ops.config == sample_config
-        assert icloud_ops.git_repo_path == sample_config.git_repo_path
-        assert icloud_ops.rclone_config_content == sample_config.rclone_config_content
-        assert icloud_ops.rclone_remote_folder == sample_config.rclone_remote_folder
+        assert icloud_ops.config == verbose_config
+        assert icloud_ops.git_repo_path == verbose_config.git_repo_path
+        assert icloud_ops.rclone_config_content == verbose_config.rclone_config_content
+        assert icloud_ops.rclone_remote_folder == verbose_config.rclone_remote_folder
         assert icloud_ops.rclone_config_file == mock_rclone_config_file
         
         # Verify config file setup
         mock_tempfile.assert_called_once_with(mode='w', suffix='.conf', delete=False)
-        mock_rclone_config_file.write.assert_called_once_with(sample_config.rclone_config_content)
+        mock_rclone_config_file.write.assert_called_once_with(verbose_config.rclone_config_content)
         mock_rclone_config_file.flush.assert_called_once()
         mock_rclone_config_file.close.assert_called_once()
         
@@ -69,9 +83,8 @@ class TestICloudOperations:
         
         # Check output messages
         captured = capsys.readouterr()
-        assert f"iCloud operations configured (READ-ONLY mode) for path: {sample_config.git_repo_path}" in captured.out
-        assert f"iCloud remote folder: {sample_config.rclone_remote_folder}" in captured.out
-        assert f"Rclone config setup at: {mock_rclone_config_file.name}" in captured.out
+        assert f"iCloud sync configured: {verbose_config.rclone_remote_folder} → test_repo" in captured.out
+        assert f"Rclone config ready" in captured.out
 
     @patch('sync_icloud_git.icloud_operations.tempfile.NamedTemporaryFile')
     @patch('builtins.open', new_callable=mock_open, read_data="")
@@ -105,7 +118,7 @@ class TestICloudOperations:
         
         # Check output
         captured = capsys.readouterr()
-        assert "🔍 Testing iCloud connection..." in captured.out
+        assert "Testing iCloud connection..." in captured.out
         assert "✅ Found 3 items in iCloud folder" in captured.out
 
     @patch('sync_icloud_git.icloud_operations.tempfile.NamedTemporaryFile')
@@ -174,9 +187,9 @@ class TestICloudOperations:
         
         # Check output
         captured = capsys.readouterr()
-        assert "🔄 Starting sync from iCloud folder" in captured.out
-        assert "✅ Sync completed successfully!" in captured.out
-        assert "📁 Synced iCloud folder to git repository using rclone_python library" in captured.out
+        assert "Starting sync from iCloud folder" in captured.out
+        assert "✅ rclone sync completed!" in captured.out
+        assert "files in repository" in captured.out
 
     @patch('sync_icloud_git.icloud_operations.tempfile.NamedTemporaryFile')
     @patch('builtins.open', new_callable=mock_open, read_data="config content")
@@ -254,7 +267,7 @@ class TestICloudOperations:
         
         # Check output
         captured = capsys.readouterr()
-        assert "🚫 Excluding 2 patterns using separate --exclude arguments" in captured.out
+        assert "Excluding 2 patterns: .DS_Store, *.tmp" in captured.out
 
     @patch('sync_icloud_git.icloud_operations.tempfile.NamedTemporaryFile')
     @patch('builtins.open', new_callable=mock_open, read_data="config content")
@@ -342,12 +355,10 @@ class TestICloudOperations:
         
         # Check debug output
         captured = capsys.readouterr()
-        assert "🔧 DEBUG: rclone_python library parameters:" in captured.out
-        assert f"src_path: '{remote_path}'" in captured.out
-        assert f"dest_path: '{sample_config.git_repo_path}'" in captured.out
-        assert "show_progress: True" in captured.out
-        assert f"args: {args}" in captured.out
-        assert f"exclude_patterns from config: {sample_config.exclude_patterns}" in captured.out
+        assert "Syncing from" in captured.out
+        assert remote_path in captured.out
+        assert sample_config.git_repo_path in captured.out
+        assert f"Excluding {len(sample_config.exclude_patterns)} patterns:" in captured.out
 
     @patch('sync_icloud_git.icloud_operations.tempfile.NamedTemporaryFile')
     @patch('builtins.open', new_callable=mock_open, read_data="config content")
@@ -374,20 +385,34 @@ class TestICloudOperations:
         
         # Check output
         captured = capsys.readouterr()
-        assert "🔧 Executing rclone.sync with library..." in captured.out
-        assert "✅ rclone.sync completed successfully!" in captured.out
+        assert "✅ rclone sync completed!" in captured.out
+        assert "files in repository" in captured.out
 
     @patch('sync_icloud_git.icloud_operations.tempfile.NamedTemporaryFile')
     @patch('builtins.open', new_callable=mock_open, read_data="config content")
     @patch('sync_icloud_git.icloud_operations.os.path.exists')
     @patch('sync_icloud_git.icloud_operations.os.unlink')
     def test_cleanup_rclone_config(self, mock_unlink, mock_exists, mock_open_builtin, mock_tempfile,
-                                  sample_config, mock_rclone_config_file, capsys):
+                                  mock_rclone_config_file, capsys):
         """Test cleanup of rclone config file."""
         mock_tempfile.return_value = mock_rclone_config_file
         mock_exists.return_value = True
         
-        icloud_ops = ICloudOperations(sample_config)
+        # Create a verbose config to see cleanup messages
+        verbose_config = SyncConfig(
+            git_remote_url="https://github.com/test/repo.git",
+            git_username="testuser",
+            git_pat="test_token",
+            git_repo_path="/tmp/test_repo",
+            git_commit_message="Test commit message",
+            rclone_config_content="[iclouddrive]\ntype = webdav\nurl = https://p123-caldav.icloud.com\nuser = testuser\npass = testpass",
+            rclone_remote_folder="Documents/TestFolder",
+            exclude_patterns=[".DS_Store", "*.tmp"],
+            step="all",
+            verbose=True
+        )
+        
+        icloud_ops = ICloudOperations(verbose_config)
         icloud_ops._cleanup_rclone_config()
         
         # Verify cleanup operations
@@ -516,4 +541,4 @@ class TestICloudOperations:
             # Check final output
             captured = capsys.readouterr()
             assert "✅ Found 3 items in iCloud folder" in captured.out
-            assert "✅ Sync completed successfully!" in captured.out
+            assert "✅ rclone sync completed!" in captured.out

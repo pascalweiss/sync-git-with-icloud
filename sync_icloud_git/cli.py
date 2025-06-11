@@ -208,15 +208,20 @@ class StepPipeline:
 def main():
     """Run the main program."""
     config = SyncConfig.load_config()
-    print(f"Configuration: {config}")
+    
+    # Only print configuration details if verbose mode is enabled
+    if config.verbose:
+        print(f"Configuration: {config}")
     
     # Create an instance of GitOperations with the loaded configuration
     git_ops = GitOperations(config)
-    print(f"GitOperations: {git_ops}")
+    if config.verbose:
+        print(f"GitOperations: {git_ops}")
     
     # Create an instance of ICloudOperations with the loaded configuration
     icloud_ops = ICloudOperations(config)
-    print(f"ICloudOperations: {icloud_ops}")
+    if config.verbose:
+        print(f"ICloudOperations: {icloud_ops}")
     
     # Execute the pipeline based on the step parameter
     pipeline = StepPipeline()

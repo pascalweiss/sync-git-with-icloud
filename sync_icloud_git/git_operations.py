@@ -15,7 +15,7 @@ class GitOperations:
         self.git_repo_path = config.git_repo_path
         self.repo = None
         
-        if self.git_username and self.git_pat:
+        if self.git_username and self.git_pat and config.verbose:
             print(f"Git authentication configured for user: {self.git_username}")
 
 

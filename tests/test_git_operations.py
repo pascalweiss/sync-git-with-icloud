@@ -74,15 +74,23 @@ class TestGitOperations:
         assert git_ops.git_repo_path == "/tmp/test"
         assert git_ops.repo is None
 
-    def test_init_with_credentials(self, sample_config, capsys):
+    def test_init_with_credentials(self, capsys):
         """Test GitOperations initialization with credentials."""
-        git_ops = GitOperations(sample_config)
+        # Create a verbose config to see authentication messages
+        verbose_config = SyncConfig(
+            git_remote_url="https://github.com/test/repo.git",
+            git_username="testuser",
+            git_pat="test_token",
+            git_repo_path="/tmp/test_repo",
+            verbose=True
+        )
+        git_ops = GitOperations(verbose_config)
         
-        assert git_ops.config == sample_config
-        assert git_ops.git_remote_url == sample_config.git_remote_url
-        assert git_ops.git_username == sample_config.git_username
-        assert git_ops.git_pat == sample_config.git_pat
-        assert git_ops.git_repo_path == sample_config.git_repo_path
+        assert git_ops.config == verbose_config
+        assert git_ops.git_remote_url == verbose_config.git_remote_url
+        assert git_ops.git_username == verbose_config.git_username
+        assert git_ops.git_pat == verbose_config.git_pat
+        assert git_ops.git_repo_path == verbose_config.git_repo_path
         assert git_ops.repo is None
         
         # Check that authentication message was printed
