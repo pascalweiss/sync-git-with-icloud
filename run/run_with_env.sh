@@ -5,7 +5,7 @@
 # Run the tests
 LOC="$(dirname "$0")"
 
-cd $LOC
+cd $LOC/..
 
 rm -rf synced_repo
 

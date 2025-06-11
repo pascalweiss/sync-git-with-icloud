@@ -58,6 +58,10 @@ def main():
             print(f"❌ iCloud sync failed: {e}")
             return
         
+        # Show what files changed after sync
+        print("\n--- Files changed after sync ---")
+        git_ops.show_changed_files()
+        
         # Commit changes after successful iCloud sync
         print("\n--- Committing changes ---")
         try:

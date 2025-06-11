@@ -231,5 +231,38 @@ class GitOperations:
             return False
 
 
+    def _print_repo_changes(self, repo):
+        """Print git status for a repository."""
+        try:
+            # Use git status --porcelain for clean, parseable output
+            status_output = repo.git.status('--porcelain')
+            if status_output.strip():
+                print(status_output)
+            else:
+                print("  (no changes)")
+        except Exception as e:
+            print(f"  Error getting status: {e}")
+
+    def show_changed_files(self):
+        """Show files that have changed since the last commit in main repo and submodules."""
+        if not self.repo:
+            print("No repository loaded.")
+            return False
+        
+        # Main repository
+        print(f"Main repository ({self.git_repo_path}):")
+        self._print_repo_changes(self.repo)
+        
+        # Submodules
+        for submodule in self.repo.submodules:
+            try:
+                submodule_repo = submodule.module()
+                print(f"Submodule '{submodule.name}':")
+                self._print_repo_changes(submodule_repo)
+            except Exception as e:
+                print(f"Submodule '{submodule.name}': Error - {e}")
+        
+        return True
+
     def __repr__(self):
         return f"GitOperations(git_repo_path='{self.git_repo_path}')"
