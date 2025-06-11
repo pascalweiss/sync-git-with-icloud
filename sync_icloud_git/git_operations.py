@@ -19,6 +19,20 @@ class GitOperations:
             print(f"Git authentication configured for user: {self.git_username}")
 
 
+    def load_existing_repo(self):
+        """Load an existing repository without updating it."""
+        if not os.path.exists(self.git_repo_path) or not os.path.exists(os.path.join(self.git_repo_path, '.git')):
+            return False
+        
+        try:
+            print(f"Loading existing git repository at {self.git_repo_path}")
+            self.repo = git.Repo(self.git_repo_path)
+            return True
+        except Exception as e:
+            print(f"Error loading repository: {e}")
+            return False
+
+
     def check_and_update_repo(self):
         """Check for existing repository and update it with submodules."""
         # Check if repository exists
