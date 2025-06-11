@@ -7,7 +7,7 @@ variables:
   NEXUS_PASSWORD: "YOUR-PASSWORD" # I wouldn't do this to a company. But for my personal educational purpose, this is fine
   NEXUS_USERNAME: "pweiss"
   IMAGE_NAME: "sync-icloud-to-git"
-  TAG: 0.1.0
+  TAG: 0.1.1
 
 .default-before-script: &default-before-script 
   - 'echo "Runner info: $CI_RUNNER_DESCRIPTION"'
