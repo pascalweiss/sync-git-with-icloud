@@ -9,7 +9,6 @@ variables:
 .default-before-script: &default-before-script 
   - 'echo "Runner info: $CI_RUNNER_DESCRIPTION"'
   - cat /etc/os-release
-  - env | sort
 
 build-docker-image:
   stage: build
