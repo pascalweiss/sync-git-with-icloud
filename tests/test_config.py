@@ -15,6 +15,8 @@ class TestSyncConfig:
         
         assert config.git_repo_path == SyncConfig.DEFAULT_GIT_REPO_PATH
         assert config.git_commit_message == SyncConfig.DEFAULT_GIT_COMMIT_MESSAGE
+        assert config.git_commit_username == SyncConfig.DEFAULT_GIT_COMMIT_USERNAME
+        assert config.git_commit_email == SyncConfig.DEFAULT_GIT_COMMIT_EMAIL
         assert config.exclude_patterns == SyncConfig.DEFAULT_EXCLUDE_PATTERNS
         assert config.step == 'all'
         assert config.git_remote_url is None
@@ -26,6 +28,8 @@ class TestSyncConfig:
     def test_default_constants(self):
         """Test that default constants are properly defined."""
         assert SyncConfig.DEFAULT_GIT_COMMIT_MESSAGE == "Sync git with iCloud Drive"
+        assert SyncConfig.DEFAULT_GIT_COMMIT_USERNAME == "Sync Bot"
+        assert SyncConfig.DEFAULT_GIT_COMMIT_EMAIL == "sync-bot@example.com"
         assert isinstance(SyncConfig.DEFAULT_EXCLUDE_PATTERNS, list)
         assert len(SyncConfig.DEFAULT_EXCLUDE_PATTERNS) > 0
         assert "'.git/'" in SyncConfig.DEFAULT_EXCLUDE_PATTERNS
@@ -315,3 +319,66 @@ class TestSyncConfig:
         # Should be able to modify after creation (not immutable)
         config.git_commit_message = "Modified message"
         assert config.git_commit_message == "Modified message"
+
+    @patch('sys.argv', ['sync-icloud-git'])
+    def test_git_commit_identity_environment_variables(self):
+        """Test that git commit username and email are loaded from environment variables."""
+        env_vars = {
+            'SYNC_ICLOUD_GIT__GIT_REMOTE_URL': 'https://test.com/repo.git',
+            'SYNC_ICLOUD_GIT__GIT_USERNAME': 'testuser',
+            'SYNC_ICLOUD_GIT__GIT_PAT': 'testtoken',
+            'SYNC_ICLOUD_GIT__GIT_COMMIT_USERNAME': 'Environment User',
+            'SYNC_ICLOUD_GIT__GIT_COMMIT_EMAIL': 'env-user@example.com',
+            'SYNC_ICLOUD_GIT__RCLONE_CONFIG_CONTENT': 'test_config',
+            'SYNC_ICLOUD_GIT__RCLONE_REMOTE_FOLDER': 'test_folder'
+        }
+        
+        with patch.dict(os.environ, env_vars):
+            config = SyncConfig.load_config()
+            
+            # Test that environment variables override defaults
+            assert config.git_commit_username == 'Environment User'
+            assert config.git_commit_email == 'env-user@example.com'
+            
+            # Test that other values are still loaded correctly
+            assert config.git_remote_url == 'https://test.com/repo.git'
+            assert config.git_username == 'testuser'
+            assert config.git_pat == 'testtoken'
+
+    @patch('sys.argv', [
+        'sync-icloud-git', 
+        '--git-commit-username', 'CLI User',
+        '--git-commit-email', 'cli-user@example.com'
+    ])
+    def test_git_commit_identity_command_line_override(self):
+        """Test that command line arguments override environment variables for git commit identity."""
+        env_vars = {
+            'SYNC_ICLOUD_GIT__GIT_REMOTE_URL': 'https://test.com/repo.git',
+            'SYNC_ICLOUD_GIT__GIT_USERNAME': 'testuser',
+            'SYNC_ICLOUD_GIT__GIT_PAT': 'testtoken',
+            'SYNC_ICLOUD_GIT__GIT_COMMIT_USERNAME': 'Environment User',
+            'SYNC_ICLOUD_GIT__GIT_COMMIT_EMAIL': 'env-user@example.com',
+            'SYNC_ICLOUD_GIT__RCLONE_CONFIG_CONTENT': 'test_config',
+            'SYNC_ICLOUD_GIT__RCLONE_REMOTE_FOLDER': 'test_folder'
+        }
+        
+        with patch.dict(os.environ, env_vars):
+            config = SyncConfig.load_config()
+            
+            # Test that CLI arguments override environment variables
+            assert config.git_commit_username == 'CLI User'
+            assert config.git_commit_email == 'cli-user@example.com'
+            
+            # Test that other environment variables are still used
+            assert config.git_remote_url == 'https://test.com/repo.git'
+            assert config.git_username == 'testuser'
+            assert config.git_pat == 'testtoken'
+            
+            # Test priority: CLI > env vars > defaults
+            # These should not be the environment values since CLI overrides them
+            assert config.git_commit_username != 'Environment User'
+            assert config.git_commit_email != 'env-user@example.com'
+            
+            # And they should not be the defaults since CLI overrides them
+            assert config.git_commit_username != SyncConfig.DEFAULT_GIT_COMMIT_USERNAME
+            assert config.git_commit_email != SyncConfig.DEFAULT_GIT_COMMIT_EMAIL
