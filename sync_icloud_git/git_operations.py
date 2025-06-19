@@ -111,11 +111,11 @@ class GitOperations:
         """Configure git user identity for commits."""
         try:
             # Set git user.name and user.email for this repository
-            repo.git.config('user.name', 'Sync Bot')
-            repo.git.config('user.email', 'sync-bot@example.com')
+            repo.git.config('user.name', self.config.git_commit_username)
+            repo.git.config('user.email', self.config.git_commit_email)
             
             if self.config.verbose:
-                print("Git identity configured: Sync Bot <sync-bot@example.com>")
+                print(f"Git identity configured: {self.config.git_commit_username} <{self.config.git_commit_email}>")
         except Exception as e:
             print(f"Warning: Could not configure git identity: {e}")
             # Don't fail the operation, just warn

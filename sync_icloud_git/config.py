@@ -15,6 +15,10 @@ class SyncConfig:
     # Default git commit message
     DEFAULT_GIT_COMMIT_MESSAGE = "Sync git with iCloud Drive"
     
+    # Default git commit author settings
+    DEFAULT_GIT_COMMIT_USERNAME = "Sync Bot"
+    DEFAULT_GIT_COMMIT_EMAIL = "sync-bot@example.com"
+    
     # Default patterns to exclude from iCloud sync. Note, that these patterns are wrapped in single quotes 
     # to ensure they are treated as strings later in the rclone command.
     DEFAULT_EXCLUDE_PATTERNS = [
@@ -30,12 +34,14 @@ class SyncConfig:
 
     ]
     
-    def __init__(self, git_remote_url=None, git_username=None, git_pat=None, git_repo_path=None, git_commit_message=None, rclone_config_content=None, rclone_remote_folder=None, exclude_patterns=None, step=None, verbose=False):
+    def __init__(self, git_remote_url=None, git_username=None, git_pat=None, git_repo_path=None, git_commit_message=None, git_commit_username=None, git_commit_email=None, rclone_config_content=None, rclone_remote_folder=None, exclude_patterns=None, step=None, verbose=False):
         self.git_remote_url = git_remote_url
         self.git_username = git_username
         self.git_pat = git_pat
         self.git_repo_path = git_repo_path if git_repo_path else self.DEFAULT_GIT_REPO_PATH
         self.git_commit_message = git_commit_message if git_commit_message else self.DEFAULT_GIT_COMMIT_MESSAGE
+        self.git_commit_username = git_commit_username if git_commit_username else self.DEFAULT_GIT_COMMIT_USERNAME
+        self.git_commit_email = git_commit_email if git_commit_email else self.DEFAULT_GIT_COMMIT_EMAIL
         self.rclone_config_content = rclone_config_content
         self.rclone_remote_folder = rclone_remote_folder
         self.exclude_patterns = exclude_patterns if exclude_patterns else self.DEFAULT_EXCLUDE_PATTERNS.copy()
@@ -55,6 +61,8 @@ class SyncConfig:
         env_pat = os.environ.get("SYNC_ICLOUD_GIT__GIT_PAT")
         env_repo_path = os.environ.get("SYNC_ICLOUD_GIT__GIT_REPO_PATH")
         env_commit_message = os.environ.get("SYNC_ICLOUD_GIT__GIT_COMMIT_MESSAGE")
+        env_commit_username = os.environ.get("SYNC_ICLOUD_GIT__GIT_COMMIT_USERNAME")
+        env_commit_email = os.environ.get("SYNC_ICLOUD_GIT__GIT_COMMIT_EMAIL")
         env_rclone_config = os.environ.get("SYNC_ICLOUD_GIT__RCLONE_CONFIG_CONTENT")
         env_rclone_remote_folder = os.environ.get("SYNC_ICLOUD_GIT__RCLONE_REMOTE_FOLDER")
         
@@ -113,6 +121,20 @@ class SyncConfig:
             default=env_commit_message if env_commit_message else cls.DEFAULT_GIT_COMMIT_MESSAGE,
         )
         parser.add_argument(
+            "--git-commit-username",
+            type=str,
+            help="The username to use for git commits (git user.name).",
+            required=False,
+            default=env_commit_username if env_commit_username else cls.DEFAULT_GIT_COMMIT_USERNAME,
+        )
+        parser.add_argument(
+            "--git-commit-email",
+            type=str,
+            help="The email to use for git commits (git user.email).",
+            required=False,
+            default=env_commit_email if env_commit_email else cls.DEFAULT_GIT_COMMIT_EMAIL,
+        )
+        parser.add_argument(
             "--rclone-config-content",
             type=str,
             help="The rclone configuration content for iCloud access.",
@@ -155,6 +177,8 @@ class SyncConfig:
             git_pat=args.git_pat, 
             git_repo_path=args.git_repo_path, 
             git_commit_message=args.git_commit_message,
+            git_commit_username=args.git_commit_username,
+            git_commit_email=args.git_commit_email,
             rclone_config_content=args.rclone_config_content, 
             rclone_remote_folder=args.rclone_remote_folder,
             exclude_patterns=exclude_patterns,
@@ -172,4 +196,4 @@ class SyncConfig:
         pat_display = "********" if self.git_pat else "None"
         rclone_display = "********" if self.rclone_config_content else "None"
         exclude_count = len(self.exclude_patterns) if self.exclude_patterns else 0
-        return f"SyncConfig(git_remote_url='{self.git_remote_url}', git_username='{self.git_username}', git_pat='{pat_display}', git_repo_path='{self.git_repo_path}', git_commit_message='{self.git_commit_message}', rclone_config_content='{rclone_display}', rclone_remote_folder='{self.rclone_remote_folder}', exclude_patterns={exclude_count} patterns, step='{self.step}', verbose={self.verbose})"
+        return f"SyncConfig(git_remote_url='{self.git_remote_url}', git_username='{self.git_username}', git_pat='{pat_display}', git_repo_path='{self.git_repo_path}', git_commit_message='{self.git_commit_message}', git_commit_username='{self.git_commit_username}', git_commit_email='{self.git_commit_email}', rclone_config_content='{rclone_display}', rclone_remote_folder='{self.rclone_remote_folder}', exclude_patterns={exclude_count} patterns, step='{self.step}', verbose={self.verbose})"
