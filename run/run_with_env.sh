@@ -14,4 +14,4 @@ source .env
 sync-icloud-git --step=all
 
 
-ls -lath synced_repo
+ls -lath $SYNC_ICLOUD_GIT__GIT_REPO_PATH

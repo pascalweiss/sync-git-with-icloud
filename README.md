@@ -62,6 +62,8 @@ SYNC_ICLOUD_GIT__GIT_USERNAME=yourusername
 SYNC_ICLOUD_GIT__GIT_PAT=your_personal_access_token
 SYNC_ICLOUD_GIT__GIT_REPO_PATH=/path/to/local/repo
 SYNC_ICLOUD_GIT__GIT_COMMIT_MESSAGE="Sync from iCloud"
+SYNC_ICLOUD_GIT__GIT_COMMIT_USERNAME="Sync Bot"
+SYNC_ICLOUD_GIT__GIT_COMMIT_EMAIL="sync-bot@example.com"
 
 # iCloud Configuration (rclone WebDAV)
 SYNC_ICLOUD_GIT__RCLONE_CONFIG_CONTENT="[iclouddrive]
@@ -84,6 +86,14 @@ SYNC_ICLOUD_GIT__RCLONE_REMOTE_FOLDER=Documents/YourFolder
 | `SYNC_ICLOUD_GIT__GIT_REPO_PATH` | Local repository path | `/tmp/my-repo` |
 | `SYNC_ICLOUD_GIT__RCLONE_CONFIG_CONTENT` | rclone config for iCloud | See configuration example above |
 | `SYNC_ICLOUD_GIT__RCLONE_REMOTE_FOLDER` | iCloud folder to sync | `Documents/MyFolder` |
+
+### Optional Environment Variables
+
+| Variable | Description | Default | Example |
+|----------|-------------|---------|---------|
+| `SYNC_ICLOUD_GIT__GIT_COMMIT_MESSAGE` | Commit message for changes | `"Sync git with iCloud Drive"` | `"Sync from iCloud"` |
+| `SYNC_ICLOUD_GIT__GIT_COMMIT_USERNAME` | Git commit author name | `"Sync Bot"` | `"iCloud Sync Bot"` |
+| `SYNC_ICLOUD_GIT__GIT_COMMIT_EMAIL` | Git commit author email | `"sync-bot@example.com"` | `"bot@company.com"` |
 
 ## 🖥️ CLI Usage
 

@@ -27,6 +27,8 @@ class GitOperations:
         try:
             print(f"Loading existing git repository at {self.git_repo_path}")
             self.repo = git.Repo(self.git_repo_path)
+            # Configure git identity for commits
+            self._configure_git_identity(self.repo)
             return True
         except Exception as e:
             print(f"Error loading repository: {e}")
@@ -42,6 +44,9 @@ class GitOperations:
         try:
             print(f"Found existing git repository at {self.git_repo_path}")
             self.repo = git.Repo(self.git_repo_path)
+            
+            # Configure git identity for commits
+            self._configure_git_identity(self.repo)
             
             # Ensure we're on a proper branch
             if self.repo.head.is_detached:
@@ -80,6 +85,9 @@ class GitOperations:
             # Clone main repository
             self.repo = git.Repo.clone_from(self._get_auth_url(), self.git_repo_path, recursive=False)
             
+            # Configure git identity for commits
+            self._configure_git_identity(self.repo)
+            
             # Setup submodules
             self._setup_submodules()
 
@@ -98,6 +106,19 @@ class GitOperations:
             return target_url
         # Embed credentials: https://username:token@domain/path
         return f"https://{self.git_username}:{self.git_pat}@{target_url[8:]}"
+
+    def _configure_git_identity(self, repo):
+        """Configure git user identity for commits."""
+        try:
+            # Set git user.name and user.email for this repository
+            repo.git.config('user.name', self.config.git_commit_username)
+            repo.git.config('user.email', self.config.git_commit_email)
+            
+            if self.config.verbose:
+                print(f"Git identity configured: {self.config.git_commit_username} <{self.config.git_commit_email}>")
+        except Exception as e:
+            print(f"Warning: Could not configure git identity: {e}")
+            # Don't fail the operation, just warn
 
 
     def _setup_submodules(self):
@@ -120,7 +141,10 @@ class GitOperations:
         for submodule in self.repo.submodules:
             for branch in ['main', 'master']:
                 try:
-                    submodule.module().git.checkout(branch)
+                    submodule_repo = submodule.module()
+                    submodule_repo.git.checkout(branch)
+                    # Configure git identity for submodule commits
+                    self._configure_git_identity(submodule_repo)
                     print(f"Updated submodule '{submodule.name}' on '{branch}'")
                     break
                 except:
