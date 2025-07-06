@@ -36,6 +36,7 @@ class SyncConfig:
     ]
     
     def __init__(self, git_remote_url=None, git_username=None, git_pat=None, git_repo_path=None, git_commit_message=None, git_commit_username=None, git_commit_email=None, rclone_config_content=None, rclone_remote_folder=None, exclude_patterns=None, step=None, verbose=False):
+        """Initialize the SyncConfig object with provided or default values."""
         self.git_remote_url = git_remote_url
         self.git_username = git_username
         self.git_pat = git_pat
