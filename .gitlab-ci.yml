@@ -4,7 +4,7 @@ stages:
 
 variables:
   IMAGE_NAME: "sync-icloud-to-git"
-  TAG: 0.1.6
+  TAG: 0.1.5
 
 .default-before-script: &default-before-script 
   - 'echo "Runner info: $CI_RUNNER_DESCRIPTION"'

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sync-icloud-git"
-version = "0.1.6"
+version = "0.1.5"
 description = "A tool to sync between iCloud and Git repositories"
 readme = "README.md"
 authors = [
