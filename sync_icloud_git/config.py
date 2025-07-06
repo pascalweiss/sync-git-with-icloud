@@ -33,6 +33,16 @@ class SyncConfig:
         "'**/.gitignore'",
         "'.gitlab-ci.yml'",
         "'**/.gitlab-ci.yml'",
+        "'.trash'",
+        "'.trash/**'",
+        "'**/.trash'",
+        "'**/.trash/**'",
+        "'.obsidian",
+        "'.obsidian/'",
+        "'.obsidian/**'",
+        "'**/.obsidian'",
+        "'**/.obsidian/'",
+        "'**/.obsidian/**'",
     ]
     
     def __init__(self, git_remote_url=None, git_username=None, git_pat=None, git_repo_path=None, git_commit_message=None, git_commit_username=None, git_commit_email=None, rclone_config_content=None, rclone_remote_folder=None, exclude_patterns=None, step=None, verbose=False):
