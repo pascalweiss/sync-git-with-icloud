@@ -3,7 +3,7 @@
 [![Pipeline Status](https://git.pwlab.dev/homelab/sync-icloud-git/badges/main/pipeline.svg)](https://git.pwlab.dev/homelab/sync-icloud-git/-/pipelines)
 [![Coverage Report](https://git.pwlab.dev/homelab/sync-icloud-git/badges/main/coverage.svg)](https://git.pwlab.dev/homelab/sync-icloud-git/-/jobs)
 
-Automatically sync files from iCloud Drive to a Git repository using rclone and git operations.
+Automatically sync files from iCloud Drive to a Git repository using rclone and Git operations.
 
 ## 🚀 Quick Start
 
