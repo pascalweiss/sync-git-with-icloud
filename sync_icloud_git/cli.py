@@ -1,4 +1,5 @@
 """Command line interface for sync-icloud-git."""
+import sys
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any
 
@@ -229,8 +230,10 @@ def main():
     
     if success:
         print("\n🎉 Sync operation completed successfully!")
-    else:
-        print("\n❌ Sync operation failed!")
+        sys.exit(0)
+
+    print("\n❌ Sync operation failed!")
+    sys.exit(1)
 
 
 if __name__ == "__main__":
