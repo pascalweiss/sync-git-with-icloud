@@ -1,40 +1,12 @@
 """Tests for CLI exit codes."""
-import importlib
-import sys
-from types import ModuleType, SimpleNamespace
+from types import SimpleNamespace
 
 import pytest
 
-# Ensure the base package loads so we can stub submodules
-import sync_icloud_git  # noqa: F401  # Import to register package
+pytest.importorskip("git")
+pytest.importorskip("rclone_python")
 
-
-def _install_stub_modules():
-    """Install lightweight stubs for heavy dependency modules."""
-
-    if 'sync_icloud_git.git_operations' not in sys.modules:
-        git_ops_module = ModuleType('sync_icloud_git.git_operations')
-
-        class DummyGitOperations:
-            def __init__(self, config):
-                self.config = config
-
-        git_ops_module.GitOperations = DummyGitOperations
-        sys.modules['sync_icloud_git.git_operations'] = git_ops_module
-
-    if 'sync_icloud_git.icloud_operations' not in sys.modules:
-        icloud_module = ModuleType('sync_icloud_git.icloud_operations')
-
-        class DummyICloudOperations:
-            def __init__(self, config):
-                self.config = config
-
-        icloud_module.ICloudOperations = DummyICloudOperations
-        sys.modules['sync_icloud_git.icloud_operations'] = icloud_module
-
-
-_install_stub_modules()
-cli = importlib.import_module('sync_icloud_git.cli')
+import sync_icloud_git.cli as cli
 
 
 @pytest.fixture
