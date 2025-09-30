@@ -1,21 +1,39 @@
 """Tests for CLI exit codes."""
-from types import SimpleNamespace
 
 import pytest
 
 pytest.importorskip("git")
 pytest.importorskip("rclone_python")
 
+from sync_icloud_git.config import SyncConfig
 import sync_icloud_git.cli as cli
 
 
 @pytest.fixture
-def mock_dependencies(monkeypatch):
-    """Mock heavy dependencies used by the CLI entry point."""
+def mock_dependencies(monkeypatch, tmp_path):
+    """Provide minimal stubs for CLI dependencies."""
 
-    # Minimal config object consumed by the CLI
-    config = SimpleNamespace(verbose=False)
+    config = SyncConfig(
+        git_remote_url="https://example.com/repo.git",
+        git_username="user",
+        git_pat="token",
+        git_repo_path=str(tmp_path / "repo"),
+        git_commit_message="Sync",
+        rclone_config_content="[remote]\n",
+        rclone_remote_folder="Documents/Test",
+        verbose=False,
+    )
 
+    class DummyGitOperations:
+        def __init__(self, cfg):
+            self.config = cfg
+
+    class DummyICloudOperations:
+        def __init__(self, cfg):
+            self.config = cfg
+
+    monkeypatch.setattr(cli, "GitOperations", DummyGitOperations)
+    monkeypatch.setattr(cli, "ICloudOperations", DummyICloudOperations)
     monkeypatch.setattr(cli.SyncConfig, "load_config", lambda: config)
 
     return config
