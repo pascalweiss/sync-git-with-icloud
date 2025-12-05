@@ -3,7 +3,7 @@
 [![Pipeline Status](https://git.pwlab.dev/homelab/sync-icloud-git/badges/main/pipeline.svg)](https://git.pwlab.dev/homelab/sync-icloud-git/-/pipelines)
 [![Coverage Report](https://git.pwlab.dev/homelab/sync-icloud-git/badges/main/coverage.svg)](https://git.pwlab.dev/homelab/sync-icloud-git/-/jobs)
 
-Automatically sync files from iCloud Drive to a Git repository using rclone and Git operations.
+Automatically sync files from cloud storage (iCloud, Nextcloud, Google Drive, etc.) to a Git repository using rclone and Git operations.
 
 ## 🚀 Quick Start
 
@@ -27,9 +27,9 @@ Automatically sync files from iCloud Drive to a Git repository using rclone and 
 ## 📦 Installation
 
 ### Prerequisites
-- **Python 3.10+** 
+- **Python 3.10+**
 - **Git** - For repository operations
-- **rclone** - For iCloud connectivity
+- **rclone** - For cloud storage connectivity (supports iCloud, Nextcloud, Google Drive, Dropbox, S3, and 70+ backends)
   ```bash
   curl -fsSL https://rclone.org/install.sh | bash
   ```
@@ -74,7 +74,39 @@ pass = your-app-specific-password"
 
 # Sync Configuration
 SYNC_ICLOUD_GIT__RCLONE_REMOTE_FOLDER=Documents/YourFolder
+SYNC_ICLOUD_GIT__RCLONE_REMOTE_NAME=iclouddrive  # Optional, defaults to "iclouddrive"
 ```
+
+### Nextcloud Example
+
+```bash
+# rclone config for Nextcloud
+SYNC_ICLOUD_GIT__RCLONE_CONFIG_CONTENT="[nextcloud]
+type = webdav
+url = https://cloud.example.com
+vendor = nextcloud
+user = your-username
+pass = your-app-password"
+
+SYNC_ICLOUD_GIT__RCLONE_REMOTE_FOLDER=Documents/YourFolder
+SYNC_ICLOUD_GIT__RCLONE_REMOTE_NAME=nextcloud
+```
+
+### Google Drive Example
+
+```bash
+# rclone config for Google Drive
+SYNC_ICLOUD_GIT__RCLONE_CONFIG_CONTENT="[gdrive]
+type = drive
+client_id = your-client-id.apps.googleusercontent.com
+client_secret = your-client-secret
+token = {\"access_token\":\"xxx\",\"token_type\":\"Bearer\",\"refresh_token\":\"xxx\"}"
+
+SYNC_ICLOUD_GIT__RCLONE_REMOTE_FOLDER=MyDocuments
+SYNC_ICLOUD_GIT__RCLONE_REMOTE_NAME=gdrive
+```
+
+> **Note:** This tool supports **any rclone backend**. See [rclone documentation](https://rclone.org) for configuration examples for Dropbox, S3, OneDrive, and 70+ other cloud storage providers.
 
 ### Required Environment Variables
 
@@ -91,8 +123,9 @@ SYNC_ICLOUD_GIT__RCLONE_REMOTE_FOLDER=Documents/YourFolder
 
 | Variable | Description | Default | Example |
 |----------|-------------|---------|---------|
-| `SYNC_ICLOUD_GIT__GIT_COMMIT_MESSAGE` | Commit message for changes | `"Sync git with iCloud Drive"` | `"Sync from iCloud"` |
-| `SYNC_ICLOUD_GIT__GIT_COMMIT_USERNAME` | Git commit author name | `"Sync Bot"` | `"iCloud Sync Bot"` |
+| `SYNC_ICLOUD_GIT__RCLONE_REMOTE_NAME` | rclone remote name from config | `"iclouddrive"` | `"nextcloud"`, `"gdrive"` |
+| `SYNC_ICLOUD_GIT__GIT_COMMIT_MESSAGE` | Commit message for changes | `"Sync git with iCloud Drive"` | `"Sync from cloud"` |
+| `SYNC_ICLOUD_GIT__GIT_COMMIT_USERNAME` | Git commit author name | `"Sync Bot"` | `"Cloud Sync Bot"` |
 | `SYNC_ICLOUD_GIT__GIT_COMMIT_EMAIL` | Git commit author email | `"sync-bot@example.com"` | `"bot@company.com"` |
 
 ## 🖥️ CLI Usage
@@ -115,7 +148,7 @@ sync-icloud-git --step sync --verbose
 
 ### Available Steps
 
-- `sync` - Sync files from iCloud to local repository
+- `sync` - Sync files from cloud storage to local repository
 - `clone` - Clone repository only
 - `update` - Update existing repository only
 - `all` - Run complete workflow (sync → commit → push)
@@ -145,13 +178,15 @@ pytest tests/ --verbose --cov=sync_icloud_git
 
 ## 📋 Features
 
-- **Automated iCloud sync** via rclone WebDAV
+- **Multi-backend support** - Works with iCloud, Nextcloud, Google Drive, Dropbox, S3, and 70+ cloud storage providers via rclone
+- **Automated cloud sync** - One-way synchronization from cloud storage to Git
 - **Git integration** with automatic commits and pushes
 - **Flexible workflow** - run individual steps or complete pipeline
 - **Docker support** for containerized execution
 - **Comprehensive logging** with optional verbose mode
 - **Pattern-based exclusions** for unwanted files
 - **Robust error handling** and validation
+- **Backward compatible** - Existing iCloud configurations work without changes
 
 ## 🛠️ Troubleshooting
 

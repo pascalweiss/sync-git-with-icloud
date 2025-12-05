@@ -5,7 +5,9 @@ from typing import List, Dict, Any
 
 from sync_icloud_git.config import SyncConfig
 from sync_icloud_git.git_operations import GitOperations
-from sync_icloud_git.icloud_operations import ICloudOperations
+from sync_icloud_git.cloud_operations import CloudSyncOperations
+# Backward compatibility
+from sync_icloud_git.cloud_operations import ICloudOperations
 
 
 class Step(ABC):
@@ -91,22 +93,26 @@ class RepositoryCloneStep(Step):
             return False
 
 
-class ICloudSyncStep(Step):
+class CloudSyncStep(Step):
     @property
     def name(self) -> str:
-        return "Syncing from iCloud"
-    
+        return "Syncing from cloud storage"
+
     def execute(self, context: Dict[str, Any]) -> bool:
-        icloud_ops = context['icloud_ops']
-        
+        cloud_ops = context['cloud_ops']
+
         print(f"\n--- {self.name} ---")
         try:
-            icloud_ops.sync_from_icloud_to_repo()
-            print("✅ iCloud sync completed successfully!")
+            cloud_ops.sync_from_cloud_to_repo()
+            print("✅ Cloud sync completed successfully!")
             return True
         except Exception as e:
-            print(f"❌ iCloud sync failed: {e}")
+            print(f"❌ Cloud sync failed: {e}")
             return False
+
+
+# Backward compatibility alias
+ICloudSyncStep = CloudSyncStep
 
 
 class ShowChangesStep(Step):
@@ -172,7 +178,7 @@ class StepPipeline:
             'all': [
                 RepositoryUpdateStep(),
                 RepositoryCloneStep(),
-                ICloudSyncStep(),
+                CloudSyncStep(),
                 ShowChangesStep(),
                 CommitStep(),
                 PushStep()
@@ -181,19 +187,19 @@ class StepPipeline:
             'clone': [RepositoryCloneStep()],
             'sync': [
                 RepositoryLoadStep(),
-                ICloudSyncStep(),
+                CloudSyncStep(),
                 ShowChangesStep(),
                 CommitStep(),
                 PushStep()
             ]
         }
     
-    def execute(self, config, git_ops, icloud_ops) -> bool:
+    def execute(self, config, git_ops, cloud_ops) -> bool:
         """Execute the pipeline for the given step."""
         context = {
             'config': config,
             'git_ops': git_ops,
-            'icloud_ops': icloud_ops
+            'cloud_ops': cloud_ops
         }
         
         steps = self.step_definitions.get(config.step, [])
@@ -218,15 +224,15 @@ def main():
     git_ops = GitOperations(config)
     if config.verbose:
         print(f"GitOperations: {git_ops}")
-    
-    # Create an instance of ICloudOperations with the loaded configuration
-    icloud_ops = ICloudOperations(config)
+
+    # Create an instance of CloudSyncOperations with the loaded configuration
+    cloud_ops = CloudSyncOperations(config)
     if config.verbose:
-        print(f"ICloudOperations: {icloud_ops}")
-    
+        print(f"CloudSyncOperations: {cloud_ops}")
+
     # Execute the pipeline based on the step parameter
     pipeline = StepPipeline()
-    success = pipeline.execute(config, git_ops, icloud_ops)
+    success = pipeline.execute(config, git_ops, cloud_ops)
     
     if success:
         print("\n🎉 Sync operation completed successfully!")

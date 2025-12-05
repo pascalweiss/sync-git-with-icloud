@@ -54,6 +54,7 @@ pip install -e .
 - `SyncConfig` class handles all configuration via environment variables and CLI args
 - Environment variables use `SYNC_ICLOUD_GIT__` prefix
 - Required: Git credentials, rclone config, remote folder
+- Optional: rclone remote name (defaults to "iclouddrive" for backward compatibility)
 - Default exclude patterns for Git files (`.git/`, `.gitignore`, etc.)
 
 **Git Operations (`git_operations.py`)**
@@ -62,11 +63,13 @@ pip install -e .
 - Automatic Git identity configuration from config
 - Repository loading and validation
 
-**iCloud Operations (`icloud_operations.py`)**
-- `ICloudOperations` class manages rclone-based iCloud sync
-- Read-only operations from iCloud to local Git repo
-- Uses rclone WebDAV backend for iCloud Drive access
+**Cloud Storage Operations (`cloud_operations.py`)**
+- `CloudSyncOperations` class manages rclone-based cloud storage sync
+- Backend-agnostic: supports iCloud, Nextcloud, Google Drive, Dropbox, S3, and any rclone backend
+- Read-only operations from cloud storage to local Git repo
+- Uses rclone with configurable remote name (e.g., `iclouddrive`, `nextcloud`, `gdrive`)
 - Temporary config file management for rclone
+- Backward compatibility: `ICloudOperations` is an alias to `CloudSyncOperations`
 
 ### Key Design Patterns
 
@@ -79,6 +82,7 @@ pip install -e .
 All configuration can be provided via environment variables with `SYNC_ICLOUD_GIT__` prefix:
 - `GIT_REMOTE_URL`, `GIT_USERNAME`, `GIT_PAT` (required)
 - `RCLONE_CONFIG_CONTENT`, `RCLONE_REMOTE_FOLDER` (required)
+- `RCLONE_REMOTE_NAME` (optional, defaults to "iclouddrive")
 - `GIT_REPO_PATH`, `GIT_COMMIT_MESSAGE`, `GIT_COMMIT_USERNAME`, `GIT_COMMIT_EMAIL` (optional)
 
 ### CLI Usage Patterns
