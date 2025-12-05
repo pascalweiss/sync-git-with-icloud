@@ -48,7 +48,7 @@ pip install -e .
 
 ### Docker Installation
 ```bash
-docker pull registry.pwlab.dev/sync-icloud-to-git:0.1.1
+docker pull registry.pwlab.dev/sync-icloud-to-git:<VERSION>
 ```
 
 ## ⚙️ Configuration
@@ -157,10 +157,10 @@ sync-icloud-git --step sync --verbose
 
 ```bash
 # Run with environment file
-docker run --env-file .env registry.pwlab.dev/sync-icloud-to-git:0.1.1 --step sync
+docker run --env-file .env registry.pwlab.dev/sync-icloud-to-git:<VERSION> --step sync
 
 # Run complete workflow
-docker run --env-file .env registry.pwlab.dev/sync-icloud-to-git:0.1.1 --step all
+docker run --env-file .env registry.pwlab.dev/sync-icloud-to-git:<VERSION> --step all
 ```
 
 ## 🔧 Development
