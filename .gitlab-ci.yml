@@ -1,6 +1,6 @@
 stages:
-  - build
   - test
+  - build
 
 variables:
   IMAGE_NAME: "sync-icloud-to-git"
@@ -15,6 +15,10 @@ build-docker-image:
   image: registry.pwlab.dev/build-tools:0.1.0
   tags:
     - kubernetes
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
+    - when: never
   before_script:
     - *default-before-script
   script:
