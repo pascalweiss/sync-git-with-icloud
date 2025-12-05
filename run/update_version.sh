@@ -62,6 +62,9 @@ VERSION_FILES=()
 [ -f "pyproject.toml" ] && VERSION_FILES+=("pyproject.toml")
 [ -f "package.json" ] && VERSION_FILES+=("package.json")
 
+# Python package __init__.py
+[ -f "sync_icloud_git/__init__.py" ] && VERSION_FILES+=("sync_icloud_git/__init__.py")
+
 # Helm chart files
 [ -f "chart/Chart.yaml" ] && VERSION_FILES+=("chart/Chart.yaml")
 [ -f "chart/values.yaml" ] && VERSION_FILES+=("chart/values.yaml")
@@ -81,6 +84,10 @@ fi
 
 if [ -z "$CURRENT_VERSION" ] && [ -f "pyproject.toml" ]; then
     CURRENT_VERSION=$(grep -oP 'version = "\K[0-9]+\.[0-9]+\.[0-9]+' pyproject.toml 2>/dev/null || echo "")
+fi
+
+if [ -z "$CURRENT_VERSION" ] && [ -f "sync_icloud_git/__init__.py" ]; then
+    CURRENT_VERSION=$(grep -oP '__version__ = "\K[0-9]+\.[0-9]+\.[0-9]+' sync_icloud_git/__init__.py 2>/dev/null || echo "")
 fi
 
 if [ -z "$CURRENT_VERSION" ] && [ -f "setup.py" ]; then
@@ -141,6 +148,9 @@ for file in "${VERSION_FILES[@]}"; do
             ;;
         "package.json")
             update_version_in_file "$file" "s/\"version\": \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/\"version\": \"$NEW_VERSION\"/" "$NEW_VERSION"
+            ;;
+        "sync_icloud_git/__init__.py")
+            update_version_in_file "$file" "s/__version__ = \"[0-9]\+\.[0-9]\+\.[0-9]\+\"/__version__ = \"$NEW_VERSION\"/" "$NEW_VERSION"
             ;;
         "chart/Chart.yaml")
             update_version_in_file "$file" "s/version: [0-9]\+\.[0-9]\+\.[0-9]\+/version: $NEW_VERSION/" "$NEW_VERSION"
